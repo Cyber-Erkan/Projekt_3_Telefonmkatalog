@@ -5,14 +5,18 @@ const controller = require('./controller/controller');
 const app = express();
 const PORT = 3000;
 
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Static files (CSS)
 app.use('/css', express.static(path.join(__dirname, 'hemsida', 'styling')));
 
+// View engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'hemsida'));
 
+// Routes
 app.get('/', async (req, res) => {
     try {
         const contacts = await controller.getAllContacts();

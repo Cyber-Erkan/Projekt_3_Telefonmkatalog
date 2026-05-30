@@ -5,7 +5,11 @@ const readline = require('readline');
 const CSV_PATH = path.join(__dirname, '..', 'telephone_catalog.csv');
 const CSV_HEADER = 'telephonenumber,name,surname,notes';
 
+// ─── Internal helpers ────────────────────────────────────────────────────────
 
+/**
+ * Parse a single CSV line, respecting quoted fields.
+ */
 function parseCsvLine(line) {
     const result = [];
     let current = '';
@@ -25,6 +29,9 @@ function parseCsvLine(line) {
     return result;
 }
 
+/**
+ * Escape a CSV field value (wrap in quotes if it contains comma/quote/newline).
+ */
 function escapeCsvField(value) {
     const str = String(value ?? '');
     if (str.includes(',') || str.includes('"') || str.includes('\n')) {
@@ -33,6 +40,9 @@ function escapeCsvField(value) {
     return str;
 }
 
+/**
+ * Convert a contact object to a CSV row string.
+ */
 function contactToCsvRow(contact) {
     return [
         escapeCsvField(contact.telephonenumber),
@@ -42,6 +52,9 @@ function contactToCsvRow(contact) {
     ].join(',');
 }
 
+/**
+ * Read the CSV file and return an array of contact objects.
+ */
 async function readCsv() {
     return new Promise((resolve, reject) => {
         if (!fs.existsSync(CSV_PATH)) {
@@ -73,15 +86,26 @@ async function readCsv() {
     });
 }
 
+/**
+ * Write the given array of contact objects back to the CSV file.
+ */
 async function writeCsv(contacts) {
     const rows = [CSV_HEADER, ...contacts.map(contactToCsvRow)];
     fs.writeFileSync(CSV_PATH, rows.join('\r\n') + '\r\n', 'utf8');
 }
 
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+/**
+ * Return all contacts from the CSV.
+ */
 async function getAllContacts() {
     return await readCsv();
 }
 
+/**
+ * Add a new contact. Throws if a contact with the same phone number already exists.
+ */
 async function addContact(contact) {
     const contacts = await readCsv();
     const exists = contacts.some(c => c.telephonenumber === contact.telephonenumber);
@@ -90,6 +114,9 @@ async function addContact(contact) {
     await writeCsv(contacts);
 }
 
+/**
+ * Edit an existing contact identified by originalNumber.
+ */
 async function editContact(originalNumber, updatedContact) {
     const contacts = await readCsv();
     const idx = contacts.findIndex(c => c.telephonenumber === originalNumber);
@@ -98,6 +125,9 @@ async function editContact(originalNumber, updatedContact) {
     await writeCsv(contacts);
 }
 
+/**
+ * Delete a contact by phone number.
+ */
 async function deleteContact(telephonenumber) {
     const contacts = await readCsv();
     const filtered = contacts.filter(c => c.telephonenumber !== telephonenumber);
@@ -105,6 +135,9 @@ async function deleteContact(telephonenumber) {
     await writeCsv(filtered);
 }
 
+/**
+ * Search contacts by a query string across all fields.
+ */
 async function searchContacts(query) {
     const contacts = await readCsv();
     const q = query.toLowerCase();
@@ -116,6 +149,9 @@ async function searchContacts(query) {
     );
 }
 
+/**
+ * Sort contacts by a given field ('telephonenumber' | 'name' | 'surname' | 'notes') and direction.
+ */
 async function sortContacts(field, direction = 'asc') {
     const contacts = await readCsv();
     const validFields = ['telephonenumber', 'name', 'surname', 'notes'];

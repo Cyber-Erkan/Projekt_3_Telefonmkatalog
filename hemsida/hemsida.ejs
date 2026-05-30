@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/stylesheet.css">
+    <title>Telefonkatalog</title>
+</head>
+<body>
+
+<div class="page-wrap">
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo-block">
+                <span class="logo-icon">⬡</span>
+                <h1 class="logo-text">TELEFONKATALOG</h1>
+            </div>
+            <button class="btn btn-primary" id="openAddModal">+ Add Contact</button>
+        </div>
+    </header>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-wrap">
+            <span class="search-icon">⌕</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search contacts…">
+        </div>
+        <div class="sort-wrap">
+            <label class="sort-label">Sort by</label>
+            <select id="sortField" class="sort-select">
+                <option value="">— Field —</option>
+                <option value="name">First Name</option>
+                <option value="surname">Surname</option>
+                <option value="telephonenumber">Phone Number</option>
+                <option value="notes">Notes</option>
+            </select>
+            <button class="sort-dir-btn" id="sortDirBtn" title="Toggle direction">↑</button>
+        </div>
+        <div class="count-badge" id="countBadge">
+            <%= contacts.length %> contact<%= contacts.length !== 1 ? 's' : '' %>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <main class="table-wrap">
+        <table class="contact-table" id="contactTable">
+            <thead>
+                <tr>
+                    <th data-col="name">First Name</th>
+                    <th data-col="surname">Surname</th>
+                    <th data-col="telephonenumber">Phone Number</th>
+                    <th data-col="notes">Notes</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="contactBody">
+                <% contacts.forEach(function(c, i) { %>
+                <tr class="contact-row" data-idx="<%= i %>"
+                    data-name="<%= c.name.toLowerCase() %>"
+                    data-surname="<%= c.surname.toLowerCase() %>"
+                    data-phone="<%= c.telephonenumber.toLowerCase() %>"
+                    data-notes="<%= c.notes.toLowerCase() %>">
+                    <td><%= c.name %></td>
+                    <td><%= c.surname %></td>
+                    <td class="phone-cell"><%= c.telephonenumber %></td>
+                    <td class="notes-cell"><%= c.notes %></td>
+                    <td class="actions-cell">
+                        <button class="btn-icon btn-edit" title="Edit"
+                            data-phone="<%= c.telephonenumber %>"
+                            data-name="<%= c.name %>"
+                            data-surname="<%= c.surname %>"
+                            data-notes="<%= c.notes %>">✎</button>
+                        <form method="POST" action="/delete" class="inline-form delete-form">
+                            <input type="hidden" name="telephonenumber" value="<%= c.telephonenumber %>">
+                            <button type="submit" class="btn-icon btn-delete" title="Delete">✕</button>
+                        </form>
+                    </td>
+                </tr>
+                <% }); %>
+                <% if (contacts.length === 0) { %>
+                <tr id="emptyRow">
+                    <td colspan="5" class="empty-msg">No contacts yet. Add your first one!</td>
+                </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </main>
+
+</div>
+
+<!-- ── ADD MODAL ── -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">New Contact</h2>
+            <button class="modal-close" id="closeAddModal">✕</button>
+        </div>
+        <form method="POST" action="/add" class="modal-form" id="addForm">
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="name" placeholder="e.g. Anna" required>
+            </div>
+            <div class="form-group">
+                <label>Surname</label>
+                <input type="text" name="surname" placeholder="e.g. Lindqvist" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="telephonenumber" placeholder="e.g. 0701234567" required>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" placeholder="Any notes about this contact…" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" id="cancelAdd">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Contact</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ── EDIT MODAL ── -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Edit Contact</h2>
+            <button class="modal-close" id="closeEditModal">✕</button>
+        </div>
+        <form method="POST" action="/edit" class="modal-form" id="editForm">
+            <input type="hidden" name="originalNumber" id="editOriginalNumber">
+            <div class="form-group">
+                <label>First Name</label>
+                <input type="text" name="name" id="editName" placeholder="e.g. Anna" required>
+            </div>
+            <div class="form-group">
+                <label>Surname</label>
+                <input type="text" name="surname" id="editSurname" placeholder="e.g. Lindqvist" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" name="telephonenumber" id="editPhone" placeholder="e.g. 0701234567" required>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" id="editNotes" placeholder="Any notes about this contact…" rows="3"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost" id="cancelEdit">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ── Modal helpers ──────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+document.getElementById('openAddModal').addEventListener('click', () => openModal('addModal'));
+document.getElementById('closeAddModal').addEventListener('click', () => closeModal('addModal'));
+document.getElementById('cancelAdd').addEventListener('click', () => closeModal('addModal'));
+
+document.getElementById('closeEditModal').addEventListener('click', () => closeModal('editModal'));
+document.getElementById('cancelEdit').addEventListener('click', () => closeModal('editModal'));
+
+// Close on overlay click
+['addModal','editModal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', (e) => {
+        if (e.target.id === id) closeModal(id);
+    });
+});
+
+// ── Edit buttons ───────────────────────────────────────────────────────────
+document.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('editOriginalNumber').value = btn.dataset.phone;
+        document.getElementById('editPhone').value = btn.dataset.phone;
+        document.getElementById('editName').value = btn.dataset.name;
+        document.getElementById('editSurname').value = btn.dataset.surname;
+        document.getElementById('editNotes').value = btn.dataset.notes;
+        openModal('editModal');
+    });
+});
+
+// ── Delete confirmation ────────────────────────────────────────────────────
+document.querySelectorAll('.delete-form').forEach(form => {
+    form.addEventListener('submit', (e) => {
+        if (!confirm('Delete this contact?')) e.preventDefault();
+    });
+});
+
+// ── Search ─────────────────────────────────────────────────────────────────
+const searchInput = document.getElementById('searchInput');
+const rows = document.querySelectorAll('.contact-row');
+const countBadge = document.getElementById('countBadge');
+const emptyMsg = document.getElementById('emptyRow');
+
+function filterRows() {
+    const q = searchInput.value.toLowerCase().trim();
+    let visible = 0;
+    rows.forEach(row => {
+        const match = !q ||
+            row.dataset.name.includes(q) ||
+            row.dataset.surname.includes(q) ||
+            row.dataset.phone.includes(q) ||
+            row.dataset.notes.includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) visible++;
+    });
+    countBadge.textContent = visible + ' contact' + (visible !== 1 ? 's' : '');
+    if (emptyMsg) emptyMsg.style.display = visible === 0 ? '' : 'none';
+}
+
+searchInput.addEventListener('input', filterRows);
+
+// ── Sorting ────────────────────────────────────────────────────────────────
+let sortDir = 'asc';
+const sortDirBtn = document.getElementById('sortDirBtn');
+const sortField = document.getElementById('sortField');
+
+function sortTable() {
+    const field = sortField.value;
+    if (!field) return;
+
+    const fieldMap = { name: 'name', surname: 'surname', telephonenumber: 'phone', notes: 'notes' };
+    const dataKey = fieldMap[field];
+
+    const tbody = document.getElementById('contactBody');
+    const allRows = Array.from(rows);
+
+    allRows.sort((a, b) => {
+        const aVal = a.dataset[dataKey] || '';
+        const bVal = b.dataset[dataKey] || '';
+        const cmp = aVal.localeCompare(bVal);
+        return sortDir === 'asc' ? cmp : -cmp;
+    });
+
+    allRows.forEach(r => tbody.appendChild(r));
+    filterRows();
+}
+
+sortField.addEventListener('change', sortTable);
+sortDirBtn.addEventListener('click', () => {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+    sortDirBtn.textContent = sortDir === 'asc' ? '↑' : '↓';
+    sortTable();
+});
+
+// Click on table header to sort
+document.querySelectorAll('th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortField.value === col) {
+            sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            sortDirBtn.textContent = sortDir === 'asc' ? '↑' : '↓';
+        } else {
+            sortField.value = col;
+            sortDir = 'asc';
+            sortDirBtn.textContent = '↑';
+        }
+        sortTable();
+    });
+});
+</script>
+
+</body>
+</html>
